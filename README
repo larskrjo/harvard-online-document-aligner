@@ -1,1 +1,12 @@
-test
+Bibli:
+
+JGibbLDA:
+http://jgibblda.sourceforge.net/
+(how to make serial LDA run)
+
+LDA:
+http://en.wikipedia.org/wiki/Latent_Dirichlet_allocation
+http://www.cs.princeton.edu/~blei/papers/BleiNgJordan2003.pdf
+
+Parallel-LDA:
+plda.googlecode.com/files/aaim.pdf
