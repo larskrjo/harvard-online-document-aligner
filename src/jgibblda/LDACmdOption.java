@@ -20,6 +20,8 @@ public class LDACmdOption {
 	@Option(name="-dfile", usage="Specify data file")
 	public String dfile = "";
 	
+	public String dfile2 = "";
+	
 	@Option(name="-model", usage="Specify the model name")
 	public String modelName = "";
 	
@@ -46,4 +48,5 @@ public class LDACmdOption {
 	
 	@Option(name="-wordmap", usage="Specify the wordmap file")
 	public String wordMapFileName = "wordmap.txt";
+
 }

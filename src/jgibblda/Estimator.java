@@ -34,7 +34,7 @@ public class Estimator {
 	
 	// output model
 	protected Model trnModel;
-	LDACmdOption option;
+	protected LDACmdOption option;
 	
 	public boolean init(LDACmdOption option){
 		this.option = option;
