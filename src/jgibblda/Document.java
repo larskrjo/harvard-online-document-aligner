@@ -28,17 +28,24 @@
 
 package jgibblda;
 
+import java.io.Serializable;
 import java.util.Vector;
 
-public class Document {
+public class Document implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8753372510042184406L;
 	//----------------------------------------------------
 	//Instance Variables
 	//----------------------------------------------------
 	public int [] words;
 	public String rawStr;
 	public int length;
-	
+	public int index;
+
+
 	//----------------------------------------------------
 	//Constructors
 	//----------------------------------------------------
@@ -47,6 +54,7 @@ public class Document {
 		rawStr = "";
 		length = 0;
 	}
+	
 	
 	public Document(int length){
 		this.length = length;

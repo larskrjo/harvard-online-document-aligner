@@ -12,7 +12,7 @@ import jgibblda.LDADataset;
 public class MixedDataset extends LDADataset{
 	final static int EN = 0;
 	final static int ENSY = 1;
-	int[] type;
+	public int[] type;
 	String[] rawdata;
 	
 	public MixedDataset(int i) {
@@ -126,6 +126,8 @@ public class MixedDataset extends LDADataset{
 				temp[k++] = data.docs[i++];
 			while (j < M2)
 				temp[k++] = data.docs[M1+j++];
+			for (int d = 0; d < M1+M2; d++)
+				temp[d].index = d;
 			data.docs = temp;
 			data.rawdata = raw;
 			return data;

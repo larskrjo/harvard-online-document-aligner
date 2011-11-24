@@ -204,14 +204,37 @@ public class IncrModel extends Model {
 		return true;
 	}
 
-	public int[][] getInitNd() {
-		// TODO Auto-generated method stub
-		return null;
+	public int[] getFlatNw() {
+		int[] ret = new int[V*K];
+		int k = 0;
+		for (int i = 0; i < V; i++)
+			for (int j = 0; j < K; j++)
+				ret[k++] = nw[i][j];
+		return ret;
 	}
 
-	public int[] getInitNdSum() {
-		// TODO Auto-generated method stub
-		return null;
+	public int[] getNwSum() {
+		return nwsum;
+	}
+
+	public int[] getFlatNd() {
+		int[] ret = new int[M*K];
+		int k = 0;
+		for (int i = 0; i < M; i++)
+			for (int j = 0; j < K; j++)
+				ret[k++] = nd[i][j];
+		return ret;
+	}
+
+	public int[] getNdSum() {
+		return ndsum;
+	}
+
+	public Object[] getZ() {
+		Object[] ret = new Object[M];
+		for (int i = 0; i < M; i++)
+			ret[i] = (Object) z[i];
+		return ret;
 	}
 	
 	
