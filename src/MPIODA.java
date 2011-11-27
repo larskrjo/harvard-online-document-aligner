@@ -2,6 +2,8 @@ import java.io.File;
 import java.util.Vector;
 
 import mpi.Datatype;
+import mpi.Intracomm;
+import mpjdev.Comm;
 import util.KullBackLeibler;
 
 import mpi.MPI;
@@ -22,156 +24,170 @@ public class MPIODA {
 	static Document[][] data_p;
 	static int K = 10;
 	static int V, M;
-	static int basis_size = 1000;
-	static int batch_size = 100;
+	static int basis_size = 1024;
+	static int batch_size = 256;
 	static double alpha = 50.0 / K;
 	static double beta = 0.1;
 	static double[] p;
 	static int[] indices; // indices of the current document for each process
-	static int rank;
-	static int size;
+	static int global_rank;
+	static int global_size;
 	static int root = 0;
 	static int niters = 10;
+
+	static Intracomm COMM_LOCAL;
+	static Intracomm COMM_MAIN;
 	
 	public static void main(String[] args) {
 		MPI.Init(args);
-		rank = MPI.COMM_WORLD.Rank();
-		size = MPI.COMM_WORLD.Size();
-		int last_process = size-1; // process taking care of the last new batch of data
-		int next_process = 0; // process that are going to taking care of the new batch of data
+		int batchesPerBasis = basis_size/batch_size;
+		global_rank = MPI.COMM_WORLD.Rank();
+		global_size = MPI.COMM_WORLD.Size();
+		COMM_LOCAL =  MPI.COMM_WORLD.Split(global_rank % batchesPerBasis, global_rank);
+		COMM_MAIN =  MPI.COMM_WORLD.Split(global_rank % global_size/batchesPerBasis, global_rank);
+		System.out.println("Global rank: " + global_rank + " Local rank: " + COMM_LOCAL.Rank() + " Main rank: " +
+				COMM_MAIN.Rank());
 
-		/**
-		 * Declare data only initialized by root process
-		 */
-		MixedDataset dataset = null;
-		int[] parameters = new int[2];
-		Object[] data = null;
-		double[] theta_all = null;
-		int[] indices_all = null;
-		/**
-		 * Initialize data for root process
-		 */
-		if (rank == root) {
-			String dir = "/home/larsen/idea-IC-107.587/Online-Document-Aligner/corpus/lda";
-			dataset = MixedDataset.readDataSet(dir + File.separator + "en_2005_02.bag", dir + File.separator + "ensy_2005_02.bag");
-			parameters[0] = dataset.V;
-			parameters[1] = dataset.M;
-			data = dataset.docs;
-			theta_all = new double[basis_size*K];
-			indices_all = new int[basis_size];
-		}
-		/**
-		 *  Broadcast and scatter data to other processes
- 		 */
-		MPI.COMM_WORLD.Bcast(parameters, 0, parameters.length, MPI.INT, root);
-		V = parameters[0];
-		M = parameters[1];
-		
-		int num_batch = (M - (basis_size - batch_size)) / batch_size;
-		int phase_size = M / basis_size;
+		if(global_rank == COMM_MAIN.Rank()){
 
-		nd_p = new int[phase_size][batch_size][K];
-		ndsum_p = new int[phase_size][batch_size];
-		z_p = new Vector[phase_size][batch_size];
-		data_p = new Document[phase_size][batch_size];
-		nw = new int[V*K];
-		nwsum = new int[K];
-		p = new double[K];
+			global_rank = COMM_MAIN.Rank();
+			global_size = COMM_MAIN.Size();
 
-		for (int phase = 0; phase < phase_size; phase++) {
-			Object[] data_p_local = new Object[batch_size];
-			MPI.COMM_WORLD.Scatter(data, phase*basis_size, batch_size, MPI.OBJECT, data_p_local, 0, batch_size, MPI.OBJECT, root);
-			for (int i = 0; i < batch_size; i++)
-				data_p[phase][i] = (Document) data_p_local[i];
-		}
+			int last_process = global_size-1; // process taking care of the last new batch of data
+			int next_process = 0; // process that are going to taking care of the new batch of data
 
-		/**
-		 *  Initialize:
-		 *  Calculate nw_p and nwsum_p and distribute them to all processes
- 		 */
-		phase = 0;
-		nw_p = new int[V*K];
-		nwsum_p = new int[K];
-		initialSample(true);
-		indices = computeIndices();
-		MPI.COMM_WORLD.Allreduce(nw_p, 0, nw, 0, V*K, MPI.INT, MPI.SUM);
-		MPI.COMM_WORLD.Allreduce(nwsum_p, 0, nwsum, 0, K, MPI.INT, MPI.SUM);
-
-		/**
-		 *  Start Estimation
- 		 */
-		for (int batch = 0; batch < num_batch; batch++) {
-			if (rank == root)
-				System.out.println("Processing on basis documents, with " + batch + " batches added and removed.");
 			/**
-			 *  Sample
- 			 */
-			for (int iter = 0; iter < (batch==0 ? niters*size : niters); iter++) {
-				/**
-				 * Clear the number of instances of a word assigned to a topic,
-				 * and also the number of words assigned to a topic.
-				 */
-				nw_p = new int[V*K];
-				nwsum_p = new int[K];
-				/**
-				 * Sample
-				 */
-				for (int m = 0; m < batch_size; m++){				
-					for (int n = 0; n < z_p[phase][m].size(); n++){
-						int topic = sample(m,n);
-						z_p[phase][m].set(n, topic);
-					}// end for each word
-				}// end for each document
+			 * Declare data only initialized by root process
+			 */
+			MixedDataset dataset = null;
+			int[] parameters = new int[2];
+			Object[] data = null;
+			double[] theta_all = null;
+			int[] indices_all = null;
+			/**
+			 * Initialize data for root process
+			 */
+			if (global_rank == root) {
+				String dir = "/home/larsen/idea-IC-107.587/Online-Document-Aligner/corpus/lda";
+				dataset = MixedDataset.readDataSet(dir + File.separator + "en_2005_02.bag", dir + File.separator + "ensy_2005_02.bag");
+				parameters[0] = dataset.V;
+				parameters[1] = dataset.M;
+				data = dataset.docs;
+				theta_all = new double[basis_size*K];
+				indices_all = new int[basis_size];
+			}
+			/**
+			 *  Broadcast and scatter data to other processes
+			 */
+			COMM_MAIN.Bcast(parameters, 0, parameters.length, MPI.INT, root);
+			V = parameters[0];
+			M = parameters[1];
 
+			int num_batch = (M - (basis_size - batch_size)) / batch_size;
+			int phase_size = M / basis_size;
+
+			nd_p = new int[phase_size][batch_size][K];
+			ndsum_p = new int[phase_size][batch_size];
+			z_p = new Vector[phase_size][batch_size];
+			data_p = new Document[phase_size][batch_size];
+			nw = new int[V*K];
+			nwsum = new int[K];
+			p = new double[K];
+
+			for (int phase = 0; phase < phase_size; phase++) {
+				Object[] data_p_local = new Object[batch_size];
+				COMM_MAIN.Scatter(data, phase*basis_size, batch_size, MPI.OBJECT, data_p_local, 0, batch_size, MPI.OBJECT, root);
+				for (int i = 0; i < batch_size; i++)
+					data_p[phase][i] = (Document) data_p_local[i];
+			}
+
+			/**
+			 *  Initialize:
+			 *  Calculate nw_p and nwsum_p and distribute them to all processes
+			 */
+			phase = 0;
+			nw_p = new int[V*K];
+			nwsum_p = new int[K];
+			initialSample(true);
+			indices = computeIndices();
+			COMM_MAIN.Allreduce(nw_p, 0, nw, 0, V*K, MPI.INT, MPI.SUM);
+			COMM_MAIN.Allreduce(nwsum_p, 0, nwsum, 0, K, MPI.INT, MPI.SUM);
+
+			/**
+			 *  Start Estimation
+			 */
+			for (int batch = 0; batch < num_batch; batch++) {
+				if (global_rank == root)
+					System.out.println("Processing on basis documents, with " + batch + " batches added and removed.");
 				/**
-				 * If it's the last round of sampling, remove the previous batch from the next process so it's ready
-				 * to receive new batch.
+				 *  Sample
 				 */
-				if (iter == (batch==0 ? niters*size : niters) - 1) {
-					if (next_process == rank) {
-						nw_p = new int[V*K];
-						nwsum_p = new int[K];
-					}
-					MPI.COMM_WORLD.Reduce(nw_p, 0, nw, 0, V*K, MPI.INT, MPI.SUM, next_process);
-					MPI.COMM_WORLD.Reduce(nwsum_p, 0, nwsum, 0, K, MPI.INT, MPI.SUM, next_process);
-				} else {
+				for (int iter = 0; iter < (batch==0 ? niters*global_size : niters); iter++) {
 					/**
-					 * Update nw and nwsum for all processes
- 					 */
-					MPI.COMM_WORLD.Allreduce(nw_p, 0, nw, 0, V*K, MPI.INT, MPI.SUM);
-					MPI.COMM_WORLD.Allreduce(nwsum_p, 0, nwsum, 0, K, MPI.INT, MPI.SUM);
+					 * Clear the number of instances of a word assigned to a topic,
+					 * and also the number of words assigned to a topic.
+					 */
+					nw_p = new int[V*K];
+					nwsum_p = new int[K];
+					/**
+					 * Sample
+					 */
+					for (int m = 0; m < batch_size; m++){
+						for (int n = 0; n < z_p[phase][m].size(); n++){
+							int topic = sample(m,n);
+							z_p[phase][m].set(n, topic);
+						}// end for each word
+					}// end for each document
+
+					/**
+					 * If it's the last round of sampling, remove the previous batch from the next process so it's ready
+					 * to receive new batch.
+					 */
+					if (iter == (batch==0 ? niters*global_size : niters) - 1) {
+						if (next_process == global_rank) {
+							nw_p = new int[V*K];
+							nwsum_p = new int[K];
+						}
+						COMM_MAIN.Reduce(nw_p, 0, nw, 0, V*K, MPI.INT, MPI.SUM, next_process);
+						COMM_MAIN.Reduce(nwsum_p, 0, nwsum, 0, K, MPI.INT, MPI.SUM, next_process);
+					} else {
+						/**
+						 * Update nw and nwsum for all processes
+						 */
+						COMM_MAIN.Allreduce(nw_p, 0, nw, 0, V*K, MPI.INT, MPI.SUM);
+						COMM_MAIN.Allreduce(nwsum_p, 0, nwsum, 0, K, MPI.INT, MPI.SUM);
+					}
 				}
-			}
 
-			/**
-			 * Compute best matches for the current batch by sending necessary info to root process
-			 */
-			double[] theta = computeTheta();
-			MPI.COMM_WORLD.Gather(theta, 0, K*batch_size, MPI.DOUBLE, theta_all, 0, K*batch_size, MPI.DOUBLE, root);
-			MPI.COMM_WORLD.Gather(indices, 0, batch_size, MPI.INT, indices_all, 0, batch_size, MPI.INT, root);
-			/**
-			 * Represent result for the batch by use of root process
-			 */
-			if (rank == root) {
-				representResult(batch, theta_all, last_process, dataset, indices_all);
+				/**
+				 * Compute best matches for the current batch by sending necessary info to root process
+				 */
+				double[] theta = computeTheta();
+				COMM_MAIN.Gather(theta, 0, K*batch_size, MPI.DOUBLE, theta_all, 0, K*batch_size, MPI.DOUBLE, root);
+				COMM_MAIN.Gather(indices, 0, batch_size, MPI.INT, indices_all, 0, batch_size, MPI.INT, root);
+				/**
+				 * Represent result for the batch by use of root process
+				 */
+				if (global_rank == root) {
+					representResult(batch, theta_all, last_process, dataset, indices_all);
+				}
+				/*
+				 Reassign the next process to the new batch and update nw for all processes
+				 */
+				if (global_rank == next_process) {
+					phase++;
+					initialSample(false);
+					indices = computeIndices();
+					System.out.println("Process " + global_rank + " takes the lead");
+				}
+				COMM_MAIN.Bcast(nw, 0, V*K, MPI.INT, next_process);
+				/**
+				 * Shift the processes
+				 */
+				last_process = (last_process + 1) % global_size;
+				next_process = (next_process + 1) % global_size;
 			}
-			/*
-			 Reassign the next process to the new batch and update nw for all processes
-			 */
-			if (rank == next_process) {
-				phase++;
-				initialSample(false);
-				indices = computeIndices();
-				System.out.println("Process " + rank + " takes the lead");
-			}
-			MPI.COMM_WORLD.Bcast(nw, 0, V*K, MPI.INT, next_process);
-			/**
-			 * Shift the processes
-			 */
-			last_process = (last_process + 1) % size;
-			next_process = (next_process + 1) % size;
 		}
-
 		MPI.Finalize();
 	}
 
