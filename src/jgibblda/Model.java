@@ -519,6 +519,7 @@ public class Model {
 			
 			//initilize for z
 			for (n = 0; n < N; n++){
+				// Randomly choose a topic
 				int topic = (int)Math.floor(Math.random() * K);
 				z[m].add(topic);
 				

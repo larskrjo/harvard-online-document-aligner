@@ -33,7 +33,7 @@ import java.io.File;
 public class Estimator {
 	
 	// output model
-	protected Model trnModel;
+	public Model trnModel;
 	protected LDACmdOption option;
 	
 	public boolean init(LDACmdOption option){

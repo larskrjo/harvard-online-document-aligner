@@ -9,15 +9,15 @@ import java.util.Vector;
 import jgibblda.Document;
 import jgibblda.LDADataset;
 
+import javax.print.Doc;
+
 public class MixedDataset extends LDADataset{
-	final static int EN = 0;
-	final static int ENSY = 1;
-	public int[] type;
+	public Doctype[] type;
 	String[] rawdata;
 	
 	public MixedDataset(int i) {
 		super(i);
-		type = new int[i];
+		type = new Doctype[i];
 		rawdata = new String[i];
 	}
 	
@@ -72,39 +72,24 @@ public class MixedDataset extends LDADataset{
 
 	public static MixedDataset readDataSet(String f1, String f2) {
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
+			BufferedReader reader1 = new BufferedReader(new InputStreamReader(
 					new FileInputStream(f1), "UTF-8"));
 			BufferedReader reader2 = new BufferedReader(new InputStreamReader(
 					new FileInputStream(f2), "UTF-8"));
-			
-			MixedDataset data = readDataSet(reader, reader2);
-			
-			reader.close();
-			return data;
-		}
-		catch (Exception e){
-			System.out.println("Read Dataset Error: " + e.getMessage());
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
-	public static MixedDataset readDataSet(BufferedReader reader1, BufferedReader reader2){
-		try {
+
 			//read number of document
-			String line;
-			line = reader1.readLine();
+			String line1 = reader1.readLine();
 			String line2 = reader2.readLine();
-			int M1 = Integer.parseInt(line);
+			int M1 = Integer.parseInt(line1);
 			int M2 = Integer.parseInt(line2);
 			MixedDataset data = new MixedDataset(M1+M2);
 			for (int i = 0; i < M1; ++i){
-				line = reader1.readLine();
-				data.setDoc(line, i);
+				line1 = reader1.readLine();
+				data.setDoc(line1, i);
 			}
 			for (int i = 0; i < M2; ++i){
-				line = reader2.readLine();
-				data.setDoc(line, M1+i);
+				line1 = reader2.readLine();
+				data.setDoc(line1, M1+i);
 			}
 			// shuffle the data probabilistically
 			double p1 = M1 / (double) (M1+M2);
@@ -113,11 +98,11 @@ public class MixedDataset extends LDADataset{
 			String[] raw = new String[M1+M2];
 			while (i < M1 && j < M2) {
 				if (Math.random() < p1) {
-					data.type[k] = EN;
+					data.type[k] = Doctype.EN;
 					raw[k] = data.rawdata[i];
 					temp[k++] = data.docs[i++];
 				} else {
-					data.type[k] = ENSY;
+					data.type[k] = Doctype.ENSY;
 					raw[k] = data.rawdata[M1+j];
 					temp[k++] = data.docs[M1+(j++)];
 				}
@@ -130,6 +115,9 @@ public class MixedDataset extends LDADataset{
 				temp[d].index = d;
 			data.docs = temp;
 			data.rawdata = raw;
+			reader1.close();
+			reader2.close();
+
 			return data;
 		}
 		catch (Exception e){
@@ -138,5 +126,4 @@ public class MixedDataset extends LDADataset{
 			return null;
 		}
 	}
-
 }
