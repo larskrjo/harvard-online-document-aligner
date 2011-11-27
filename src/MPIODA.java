@@ -156,7 +156,7 @@ public class MPIODA {
 				representResult(batch, theta_all, last_process, dataset, indices_all);
 			}
 			/*
-			 Reassign the oldest process to the new batch and update nw for all processes
+			 Reassign the next process to the new batch and update nw for all processes
 			 */
 			if (rank == next_process) {
 				phase++;
