@@ -1,17 +1,12 @@
+import incrementallda.MixedDataset;
+
 import java.io.File;
 import java.util.Vector;
 
-import mpi.Datatype;
-import mpi.Intracomm;
-import mpjdev.Comm;
-import util.KullBackLeibler;
-
-import mpi.MPI;
-import mpi.MPIException;
-import incrementallda.IncrEstimator;
-import incrementallda.MixedDataset;
 import jgibblda.Document;
-import jgibblda.LDACmdOption;
+import mpi.Intracomm;
+import mpi.MPI;
+import util.KullBackLeibler;
 
 
 public class MPIODA {
@@ -73,7 +68,7 @@ public class MPIODA {
 		 * Initialize data for root process
 		 */
 		if (global_rank == root) {
-			String dir = "/home/larsen/idea-IC-107.587/Online-Document-Aligner/corpus/lda";
+			String dir = "/Users/edouardgodfrey/work/Online-Document-Aligner/corpus/lda";
 			dataset = MixedDataset.readDataSet(dir + File.separator + "en_2005_02.bag", dir + File.separator + "ensy_2005_02.bag");
 			parameters[0] = dataset.V;
 			parameters[1] = dataset.M;
