@@ -1,0 +1,13 @@
+=== Insight 1 ===
+
+The inputs required by a statistical machine translation systems are called parallel corpora. They consists of sets of sentences in one language with their translation counter-part. The quality of a statistical translation model relies heavily on this training data. Size is an important factor. The more data used in the process, the more accurate the system will be. Domain constitutes another major source of influence. The performance of a translation model suffers when the the training and testing sets differ in context. Unfortunately parallel corpora is a scarce ressource for most language pairs. And even when corpora of reasonable size are available, they only cover specific areas of the language. Most of them come from parliamentary proceedings and other institutional sources and are therefore not suitable to translate specific newswires.
+
+Recently, researchers addressed this problem by performing automatic extraction of parallel corpora from raw data. These techniques are computationnaly intensive because they compare couple of sentences. Therefore, for an overall raw corpus of n sentences, they perform n^2 comparisons, each of them being costly. One way to reduce the number of candidates is to compute an alignment and perform comparisons only between aligned documents. The possibility we explore here is to use LDA as the basis of the alignment. Traditionnaly, this model has been used to infer topic contents in documents. But it also provides an intuitive way to compare documents.
+
+Our experiments proves the suitability of LDA for document matching. Figure 1 and 2 provides sample results from our document alignment.
+
+We see in these examples the interest of the method for a parallel sentence extractor. Our aligner has matched in Figure 1 and 2 two document pairs that are almost perfect translation from one another.
+
+Note that a consequent number of extracted documents constitute false positives as for parallel sentences content. However, some of them are not all bad. In Figure 3, we can observe an example of this. The alignment of the document still contains valuable information for lower-level parallelism. Words like "threatened to pursue jihad" in the english newswire find their french counterparts "a menacé de guerre".
+
+Our first insight on this project is the validation of the LDA approach to obtain an alignment of good quality.
