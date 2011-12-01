@@ -3,13 +3,10 @@ package incrementallda;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Vector;
 
 import jgibblda.Document;
 import jgibblda.LDADataset;
-
-import javax.print.Doc;
 
 public class MixedDataset extends LDADataset{
 	public Doctype[] type;
@@ -29,8 +26,9 @@ public class MixedDataset extends LDADataset{
 	 * set the document at the index idx if idx is greater than 0 and less than M
 	 * @param str string contains doc
 	 * @param idx index in the document array
+	 * @param relativeIndex 
 	 */
-	public void setDoc(String str, int idx){
+	public void setDoc(String str, int idx, int relativeIndex){
 		rawdata[idx] = str;
 		if (0 <= idx && idx < M){
 			String [] words = str.split("[ \\t\\n]");
@@ -66,6 +64,7 @@ public class MixedDataset extends LDADataset{
 			
 			Document doc = new Document(ids, str);
 			docs[idx] = doc;
+			doc.relativeIndex = relativeIndex;
 			V = localDict.word2id.size();			
 		}
 	}
@@ -85,11 +84,11 @@ public class MixedDataset extends LDADataset{
 			MixedDataset data = new MixedDataset(M1+M2);
 			for (int i = 0; i < M1; ++i){
 				line1 = reader1.readLine();
-				data.setDoc(line1, i);
+				data.setDoc(line1, i, i);
 			}
 			for (int i = 0; i < M2; ++i){
 				line1 = reader2.readLine();
-				data.setDoc(line1, M1+i);
+				data.setDoc(line1, M1+i, i);
 			}
 			// shuffle the data probabilistically
 			double p1 = M1 / (double) (M1+M2);
@@ -125,5 +124,9 @@ public class MixedDataset extends LDADataset{
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	public int getRelativeIndex(int i) {
+		return docs[i].relativeIndex;
 	}
 }

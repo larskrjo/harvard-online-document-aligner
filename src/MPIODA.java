@@ -1,12 +1,15 @@
+import incrementallda.Doctype;
 import incrementallda.MixedDataset;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Vector;
 
 import jgibblda.Document;
 import mpi.Intracomm;
 import mpi.MPI;
 import util.KullBackLeibler;
+import util.Util;
 
 
 public class MPIODA {
@@ -37,9 +40,12 @@ public class MPIODA {
 	static Intracomm COMM_LOCAL;
 	static Intracomm COMM_MAIN;
 	static int numberOfProcessesPerBatch;
+	
+	static String[] enIndex;
+	static String[] frIndex;
 
-	public static void main(String[] args) {
-		MPI.Init(args);
+	public static void main(String[] args) throws FileNotFoundException {
+		args = MPI.Init(args);
 		int batchesPerBasis = basis_size/batch_size;
 		global_rank = MPI.COMM_WORLD.Rank();
 		global_size = MPI.COMM_WORLD.Size();
@@ -50,8 +56,8 @@ public class MPIODA {
 		COMM_LOCAL =  MPI.COMM_WORLD.Split(main_rank % batchesPerBasis, global_rank);
 		local_rank = COMM_LOCAL.Rank();
 		local_size = COMM_LOCAL.Size();
-		System.out.println("Global rank: " + global_rank + " Local rank: " + COMM_LOCAL.Rank() + " Main rank: " +
-				COMM_MAIN.Rank());
+		//System.out.println("Global rank: " + global_rank + " Local rank: " + COMM_LOCAL.Rank() + " Main rank: " +
+		//		COMM_MAIN.Rank());
 
 		int last_process = main_size-1; // process taking care of the last new batch of data
 		int next_process = 0; // process that are going to taking care of the new batch of data
@@ -68,11 +74,15 @@ public class MPIODA {
 		 * Initialize data for root process
 		 */
 		if (global_rank == root) {
-			String dir = "/Users/edouardgodfrey/work/Online-Document-Aligner/corpus/lda";
-			dataset = MixedDataset.readDataSet(dir + File.separator + "en_2005_02.bag", dir + File.separator + "ensy_2005_02.bag");
+			String dir = args[0];
+			String fileEn = args[1];
+			String fileFr = args[2];
+			dataset = MixedDataset.readDataSet(dir + File.separator + fileEn, dir + File.separator + fileFr);
 			parameters[0] = dataset.V;
 			parameters[1] = dataset.M;
 			data = dataset.docs;
+			enIndex = Util.loadIndexFile(dir + File.separator + "en_2005_02.bag.id");
+			frIndex = Util.loadIndexFile(dir + File.separator + "ensy_2005_02.bag.id");
 			theta_all = new double[basis_size*K];
 			indices_all = new int[basis_size];
 		}
@@ -114,8 +124,8 @@ public class MPIODA {
 		 *  Start Estimation
 		 */
 		for (int batch = 0; batch < num_batch; batch++) {
-			if (global_rank == root)
-				System.out.println("Processing on basis documents, with " + batch + " batches added and removed.");
+			//if (global_rank == root)
+				//System.out.println("Processing on basis documents, with " + batch + " batches added and removed.");
 			/**
 			 *  Sample
 			 */
@@ -180,9 +190,9 @@ public class MPIODA {
 				phase++;
 				initialSample(false);
 				indices = computeIndices();
-				System.out.println("Process " + global_rank + " takes the lead");
+				//System.out.println("Process " + global_rank + " takes the lead");
 				COMM_LOCAL.Reduce(nw_temp, 0, nw, 0, V*K, MPI.INT, MPI.SUM, 0);
-				System.out.println("Process " + global_rank + " finished reducing");
+				//System.out.println("Process " + global_rank + " finished reducing");
 			}
 			MPI.COMM_WORLD.Bcast(nw, 0, V*K, MPI.INT, numberOfProcessesPerBatch*next_process);
 			/**
@@ -346,6 +356,12 @@ public class MPIODA {
 			 * If they are similiar, show it.
 			 */
 			if (min_div < 0.005) {
+				if (dataset.type[indices_all[q]] == Doctype.EN) {
+					System.out.println(enIndex[dataset.getRelativeIndex(indices_all[q])] + "-" + frIndex[dataset.getRelativeIndex(indices_all[best])]);
+				} else {
+					System.out.println(enIndex[dataset.getRelativeIndex(indices_all[best])] + "-" + frIndex[dataset.getRelativeIndex(indices_all[q])]);
+				}
+				/*
 				System.out.println("======================================");
 				System.out.println("Score for (" + indices_all[q] + ", " + indices_all[best] + ") = " + min_div);
 				System.out.println("--------------------------------------");
@@ -353,6 +369,7 @@ public class MPIODA {
 				System.out.println("--------------------------------------");
 				System.out.println(dataset.getRawDoc(indices_all[best]));
 				System.out.println("======================================");
+				*/
 			}
 		}
 	}

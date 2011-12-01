@@ -43,8 +43,8 @@ public class Document implements Serializable {
 	public int [] words;
 	public String rawStr;
 	public int length;
-	public int index;
-
+	public int index; // absoluteIndex
+	public int relativeIndex;
 
 	//----------------------------------------------------
 	//Constructors

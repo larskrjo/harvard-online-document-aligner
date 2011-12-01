@@ -36,10 +36,9 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
 public class Reader implements ListSelectionListener{
-	// Initialize all swing objects.
+
     private JFrame f = new JFrame("Reader"); //create Frame
-    //private JPanel pnlWest = new JPanel(); // West quadrant
-    //private JPanel pnlCenter = new JPanel(); // Center quadrant
+    int maxLines = 1000;
 
 	// Buttons some there is something to put in the panels
     private JList ls;
@@ -90,20 +89,23 @@ public class Reader implements ListSelectionListener{
         Thread listener = new Thread(new Runnable() {
 
         	public void run() {
-				try {
-	        		BufferedReader br = new BufferedReader(match_reader);
-        		while (true) {
-        			//System.out.println(in.hasNextLine());
-        			String l;
-        			if ((l = br.readLine()) != null) {
-        				listModel.addElement(l);
-        				//System.out.println(l);
+        		try {
+        			BufferedReader br = new BufferedReader(match_reader);
+        			int count = 0;
+        			while (count++ < maxLines) {
+        				//System.out.println(in.hasNextLine());
+        				String l;
+        				if ((l = br.readLine()) != null) {
+        					if (! l.startsWith("AFP"))
+        						continue;
+        					listModel.addElement(l);
+        					//System.out.println(l);
+        				}
         			}
+        		} catch (Exception e) {
+        			e.printStackTrace();
+        			System.exit(-1);
         		}
-				} catch (Exception e) {
-					e.printStackTrace();
-					System.exit(-1);
-				}
         	}
 
         });

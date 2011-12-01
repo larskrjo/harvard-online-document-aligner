@@ -1,16 +1,19 @@
 package incrementallda;
 
 import java.io.File;
-
-import util.KullBackLeibler;
+import java.io.FileNotFoundException;
 
 import jgibblda.Conversion;
 import jgibblda.Estimator;
 import jgibblda.LDACmdOption;
+import util.KullBackLeibler;
+import util.Util;
 
 public class IncrEstimator extends Estimator {
 	public IncrModel trnModel;
-	public boolean init(LDACmdOption option, int basis, int batch) {
+	String[] enIndex;
+	String[] frIndex;
+	public boolean init(LDACmdOption option, int basis, int batch) throws FileNotFoundException {
 		this.option = option;
 		trnModel = new IncrModel(basis, batch);
 		super.trnModel = trnModel;
@@ -23,7 +26,8 @@ public class IncrEstimator extends Estimator {
 			if (!trnModel.initEstimatedModel(option))
 				return false;
 		}
-
+		enIndex = Util.loadIndexFile(option.dir + File.separator + "en_2005_02.bag.id");
+		frIndex = Util.loadIndexFile(option.dir + File.separator + "ensy_2005_02.bag.id");
 		return true;
 	}
 
@@ -33,7 +37,7 @@ public class IncrEstimator extends Estimator {
 		int n_iter, start_lookup;
 		while (trnModel.hasNextBatch()) {
 			trnModel.nextBatch();
-			System.out.println("Processing batch " + i);
+			//System.out.println("Processing batch " + i);
 			if (start) {
 				n_iter = 10*trnModel.niters;
 				start_lookup = 0;
@@ -43,7 +47,7 @@ public class IncrEstimator extends Estimator {
 				start_lookup = trnModel.sup - trnModel.batch_size + 1;
 			}
 			for (int iter = 0; iter < n_iter; iter++){
-				System.out.print(".");
+				//System.out.print(".");
 
 				// for all z_i
 				for (int m = trnModel.inf; m <= trnModel.sup; m++){				
@@ -55,7 +59,7 @@ public class IncrEstimator extends Estimator {
 					}// end for each word
 				}// end for each document
 			}
-			System.out.print("\n");
+			//System.out.print("\n");
 
 			computeTheta();
 			// compute the best matches
@@ -74,6 +78,12 @@ public class IncrEstimator extends Estimator {
 					}
 				}
 				if (min_div < 0.005) {
+					if (trnModel.data.type[m] == Doctype.EN) {
+						System.out.println(enIndex[trnModel.data.getRelativeIndex(m)] + "-" + frIndex[trnModel.data.getRelativeIndex(best)]);
+					} else {
+						System.out.println(enIndex[trnModel.data.getRelativeIndex(m)] + "-" + frIndex[trnModel.data.getRelativeIndex(best)]);
+					}
+					/*
 					System.out.println("======================================");
 					System.out.println("Score for (" + m + ", " + best + ") = " + min_div);
 					System.out.println("--------------------------------------");
@@ -81,6 +91,7 @@ public class IncrEstimator extends Estimator {
 					System.out.println("--------------------------------------");
 					System.out.println(trnModel.data.getRawDoc(best));
 					System.out.println("======================================");
+					*/
 				}
 			}
 
