@@ -23,7 +23,7 @@ public class MPIODA {
 	static int K = 10;
 	static int V, M;
 	static int basis_size = 2048; // Must be a power of 2.
-	static int batch_size = 1024; // Cannot exceed basis_size and must be a power of 2.
+	static int batch_size = 2048; // Cannot exceed basis_size and must be a power of 2.
 	static double alpha = 50.0 / K;
 	static double beta = 0.1;
 	static double[] p;
@@ -35,7 +35,7 @@ public class MPIODA {
 	static int local_rank;
 	static int local_size;
 	static int root = 0;
-	static int niters = 10;
+	static int niters = 300;
 
 	static Intracomm COMM_LOCAL;
 	static Intracomm COMM_MAIN;
@@ -190,7 +190,6 @@ public class MPIODA {
 			/*
 			 Reassign the next process to the new batch and update nw for all processes
 			 */
-			MPI.COMM_WORLD.Barrier();
 			if (main_rank == next_process) {
 				phase++;
 				initialSample(false);
