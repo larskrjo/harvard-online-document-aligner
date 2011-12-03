@@ -56,7 +56,8 @@ public class MPIODA {
 		COMM_LOCAL =  MPI.COMM_WORLD.Split(main_rank % batchesPerBasis, global_rank);
 		local_rank = COMM_LOCAL.Rank();
 		local_size = COMM_LOCAL.Size();
-		System.out.println("Global rank: " + global_rank + " Local rank: " + COMM_LOCAL.Rank() + " Main rank: " +
+		System.out.println("Global rank: " + global_rank + " Local withon a batch rank: " + COMM_LOCAL.Rank() + " " +
+				"Batch rank: " +
 				COMM_MAIN.Rank());
 
 		int last_process = main_size-1; // process taking care of the last new batch of data
@@ -166,7 +167,8 @@ public class MPIODA {
 						MPI.COMM_WORLD.Reduce(nwsum_p, 0, nwsum, 0, K, MPI.INT, MPI.SUM,
 								numberOfProcessesPerBatch*next_process+i);
 					}
-				} else {
+				//} else {
+				  } else if(iter%4==0) {
 					/**
 					 * Update nw and nwsum for all processes
 					 */
