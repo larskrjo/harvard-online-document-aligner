@@ -74,15 +74,15 @@ public class MPIODA {
 		 * Initialize data for root process
 		 */
 		if (global_rank == root) {
-			String dir = args[0];
-			String fileEn = args[1];
-			String fileFr = args[2];
+			String dir = "corpus/lda";
+			String fileEn = "en_2005_02.bag";
+			String fileFr = "ensy_2005_02.bag";
 			dataset = MixedDataset.readDataSet(dir + File.separator + fileEn, dir + File.separator + fileFr);
 			parameters[0] = dataset.V;
 			parameters[1] = dataset.M;
 			data = dataset.docs;
-			enIndex = Util.loadIndexFile(dir + File.separator + args[3]);
-			frIndex = Util.loadIndexFile(dir + File.separator + args[4]);
+			enIndex = Util.loadIndexFile(dir + File.separator + "en_2005_02.bag.id");
+			frIndex = Util.loadIndexFile(dir + File.separator + "ensy_2005_02.bag.id");
 			theta_all = new double[basis_size*K];
 			indices_all = new int[basis_size];
 		}
