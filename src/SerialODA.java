@@ -19,7 +19,6 @@ public class SerialODA {
 		option.dir = args[0];
 		option.dfile = args[1];
 		option.dfile2 = args[2];
-		option.twords = 10;
 		int basis_size = 1024;
 		int batch_size = 512;
 		IncrEstimator estimator = new IncrEstimator();

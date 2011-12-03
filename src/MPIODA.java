@@ -22,13 +22,8 @@ public class MPIODA {
 	static Document[][] data_p;
 	static int K = 10;
 	static int V, M;
-<<<<<<< HEAD
-	static int basis_size = 1024; // Must be a power of 2. - size of the our list of documents
-	static int batch_size = 512; // Cannot exceed basis_size and must be a power of 2.
-=======
 	static int basis_size = 2048; // Must be a power of 2.
 	static int batch_size = 1024; // Cannot exceed basis_size and must be a power of 2.
->>>>>>> 8ddfe7bba2bc640e5273f065244533bb26148885
 	static double alpha = 50.0 / K;
 	static double beta = 0.1;
 	static double[] p;

@@ -38,7 +38,7 @@ public class LDACmdOption {
 	public int niters = 1000;
 	
 	@Option(name="-savestep", usage="Specify the number of steps to save the model since the last save")
-	public int savestep = 100;
+	public int savestep = 100000;
 	
 	@Option(name="-twords", usage="Specify the number of most likely words to be printed for each topic")
 	public int twords = 100;
