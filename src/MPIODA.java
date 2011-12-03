@@ -35,7 +35,7 @@ public class MPIODA {
 	static int local_rank;
 	static int local_size;
 	static int root = 0;
-	static int niters = 300;
+	static int niters = 100;
 
 	static Intracomm COMM_LOCAL;
 	static Intracomm COMM_MAIN;
@@ -56,7 +56,7 @@ public class MPIODA {
 		COMM_LOCAL =  MPI.COMM_WORLD.Split(main_rank % batchesPerBasis, global_rank);
 		local_rank = COMM_LOCAL.Rank();
 		local_size = COMM_LOCAL.Size();
-		System.out.println("Global rank: " + global_rank + " Local withon a batch rank: " + COMM_LOCAL.Rank() + " " +
+		System.out.println("Global rank: " + global_rank + " Local within a batch rank: " + COMM_LOCAL.Rank() + " " +
 				"Batch rank: " +
 				COMM_MAIN.Rank());
 
@@ -168,7 +168,7 @@ public class MPIODA {
 								numberOfProcessesPerBatch*next_process+i);
 					}
 				//} else {
-				  } else if(iter%4==0) {
+				  } else if(iter%20==0) {
 					/**
 					 * Update nw and nwsum for all processes
 					 */
