@@ -22,7 +22,7 @@ public class MPIODA {
 	static Document[][] data_p;
 	static int K = 10;
 	static int V, M;
-	static int basis_size = 1024; // Must be a power of 2.
+	static int basis_size = 1024; // Must be a power of 2. - size of the our list of documents
 	static int batch_size = 512; // Cannot exceed basis_size and must be a power of 2.
 	static double alpha = 50.0 / K;
 	static double beta = 0.1;
@@ -92,8 +92,8 @@ public class MPIODA {
 		MPI.COMM_WORLD.Bcast(parameters, 0, parameters.length, MPI.INT, root);
 		V = parameters[0];
 		M = parameters[1];
-        int num_batch = (M - (basis_size - batch_size)) / batch_size;
-		int phase_size = M / basis_size;
+        int num_batch = (M - (basis_size - batch_size)) / batch_size - global_size;
+		int phase_size = (M / basis_size);
         nd_p = new int[phase_size][batch_size/numberOfProcessesPerBatch][K];
 		ndsum_p = new int[phase_size][batch_size/numberOfProcessesPerBatch];
 		z_p = new Vector[phase_size][batch_size/numberOfProcessesPerBatch];
