@@ -22,8 +22,8 @@ public class MPIODA {
 	static Document[][] data_p;
 	static int K = 10;
 	static int V, M;
-	static int basis_size = 1024; // Must be a power of 2.
-	static int batch_size = 256; // Cannot exceed basis_size and must be a power of 2.
+	static int basis_size = 2048; // Must be a power of 2.
+	static int batch_size = 1024; // Cannot exceed basis_size and must be a power of 2.
 	static double alpha = 50.0 / K;
 	static double beta = 0.1;
 	static double[] p;
@@ -56,8 +56,8 @@ public class MPIODA {
 		COMM_LOCAL =  MPI.COMM_WORLD.Split(main_rank % batchesPerBasis, global_rank);
 		local_rank = COMM_LOCAL.Rank();
 		local_size = COMM_LOCAL.Size();
-		//System.out.println("Global rank: " + global_rank + " Local rank: " + COMM_LOCAL.Rank() + " Main rank: " +
-		//		COMM_MAIN.Rank());
+		System.out.println("Global rank: " + global_rank + " Local rank: " + COMM_LOCAL.Rank() + " Main rank: " +
+				COMM_MAIN.Rank());
 
 		int last_process = main_size-1; // process taking care of the last new batch of data
 		int next_process = 0; // process that are going to taking care of the new batch of data
@@ -81,8 +81,8 @@ public class MPIODA {
 			parameters[0] = dataset.V;
 			parameters[1] = dataset.M;
 			data = dataset.docs;
-			enIndex = Util.loadIndexFile(dir + File.separator + "en_2005_02.bag.id");
-			frIndex = Util.loadIndexFile(dir + File.separator + "ensy_2005_02.bag.id");
+			enIndex = Util.loadIndexFile(dir + File.separator + args[3]);
+			frIndex = Util.loadIndexFile(dir + File.separator + args[4]);
 			theta_all = new double[basis_size*K];
 			indices_all = new int[basis_size];
 		}
@@ -123,9 +123,14 @@ public class MPIODA {
 		/**
 		 *  Start Estimation
 		 */
+		long time = System.currentTimeMillis();
 		for (int batch = 0; batch < num_batch; batch++) {
-			//if (global_rank == root)
-				//System.out.println("Processing on basis documents, with " + batch + " batches added and removed.");
+			if (global_rank == root){
+				System.out.println("Processing on basis documents, with " + batch + " batches added and removed.");
+				System.out.println("Time it took: " + (System.currentTimeMillis() - time));
+				time = System.currentTimeMillis();
+			}
+
 			/**
 			 *  Sample
 			 */
@@ -356,11 +361,13 @@ public class MPIODA {
 			 * If they are similiar, show it.
 			 */
 			if (min_div < 0.005) {
-				if (dataset.type[indices_all[q]] == Doctype.EN) {
-					System.out.println(enIndex[dataset.getRelativeIndex(indices_all[q])] + "-" + frIndex[dataset.getRelativeIndex(indices_all[best])]);
-				} else {
-					System.out.println(enIndex[dataset.getRelativeIndex(indices_all[best])] + "-" + frIndex[dataset.getRelativeIndex(indices_all[q])]);
-				}
+				//if (dataset.type[indices_all[q]] == Doctype.EN) {
+				//	System.out.println(enIndex[dataset.getRelativeIndex(indices_all[q])] + "-" + frIndex[dataset
+				//		.getRelativeIndex(indices_all[best])]);
+				//} else {
+				//	System.out.println(enIndex[dataset.getRelativeIndex(indices_all[best])] + "-" + frIndex[dataset
+				//		.getRelativeIndex(indices_all[q])]);
+				//}
 				/*
 				System.out.println("======================================");
 				System.out.println("Score for (" + indices_all[q] + ", " + indices_all[best] + ") = " + min_div);
@@ -369,7 +376,7 @@ public class MPIODA {
 				System.out.println("--------------------------------------");
 				System.out.println(dataset.getRawDoc(indices_all[best]));
 				System.out.println("======================================");
-				*/
+                */
 			}
 		}
 	}
