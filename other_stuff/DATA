@@ -1,0 +1,61 @@
+== DATA ==
+
+-- Origin --
+
+The corpus we use gather a month long newswire published by the AFP in french and english in February 2005. Each language contains approximately 5.000.000 lines, 205.993 words organized in different 16.000 newswires.
+
+At the root of LDA model to align documents is the hypothesis of co-occurence. The model tends to align documents that contains co-occuring words. In order to align bilingual documents, one of the two language first has to be translated in the other version. The translations can be of varying quality. Here, we used a high-quality version provided by Systran Translation Software. Documents with the ensy prefix indicates french documents that have undergone the Systran translation.
+
+-- Preprocessing --
+
+Here is a portion of the raw data:
+
+------------------------------------------------------------------------
+<DOC id="AFP_ENG_20050201.0001" type="story" >
+<HEADLINE>
+China closes gambling rackets, one with monthly turnover of 1.6 
+bln dollars
+</HEADLINE>
+<DATELINE>
+BEIJING, Feb 1
+</DATELINE>
+<TEXT>
+<P>
+Police in southeast China have closed 
+down two illegal online gambling rackets, including one with a 
+monthly turnover of 13 billion yuan (1.6 billion dollars), state 
+media said Tuesday.
+</P>
+<P>
+The two networks, both operated from Taiwan, were unraveled in a 
+clamp down involving 880 police officers operating in several of the 
+largest cities in freewheeling Fujian province, the China Daily 
+reported.
+</P>
+<P>
+Altogether 104 Internet gambling dens were raided and closed, 
+while 70 suspects were detained, including three from Taiwan, the 
+newspaper said.
+</P>
+------------------------------------------------------------------------
+
+Each newswire is uniquely identified by its id. There is an associated headline, dateline and text. The latter is the only source of information for our aligner.
+
+Each of these texts went through the following pre-processing operations:
+
+- Tokenizer: To separate words and their punctuations
+- Lowercaser
+- Stemmer: To send each word to its root version. For example "fish", "fisherman" and "fisher" are all send to the unique root "fish".
+
+These steps provide an overall reduction of the complexity of the data and improve the performance of the aligner.
+
+The LDA model that is the underlying method to align documents do not take into account the ordering of the words. Each document is defined as a bag of words. The output of our preprocesser is therefore of the following form:
+
+N
+word_1_1 word_1_2 word_1_3 word_1_4
+word_2_1 word_2_2
+word_3_1
+...
+
+Each line represents a bag-of-word document. The first line counts their overall number. The two files of interest are located at corpus/lda/en_2005_02.bag and corpus/lda/ensy_2005_02.bag (french translated version). They are the only inputs of our program.
+

@@ -1,0 +1,49 @@
+== Design ==
+
+The backbone of our program is the LDA model that allow us to compute for each document a probability distribution of the learned topics. With this value in hand, we can compute for every couple of documents the Jensen-Shannon divergence that measures how much the documents differ regarding topic content. A divergence of 0 indicates complete topic similarity.
+
+We therefore started with an open-source Java implementation of LDA: http://jgibblda.sourceforge.net/. Our final program differs from this starting point by two aspects. First we had to parallelize the training of the LDA model. Secondly, our goal was to implement an online system that can be retrained on demand as new newswire arrive in our queues. Because we want our program to work with a constant amount of memory, as new newswires arrives, old ones must be discarded.
+
+-- Structure --
+
+-Packages description-
+
+/preprocess:
+
+Contains the class used to convert the raw documents into their bag-of-words version.
+
+/jgibblda:
+
+Original external implementation of LDA model.
+
+/incrementallda:
+
+Adaptation of jgibblda to work in an online environment of bounded size.
+
+/gui:
+
+Contains GUI class to visualize the result of matched documents extractors
+
+/default_package:
+
+Contains the serial version SerialODA of the matched documents extractor and MPIODA the MPI parallel version of the extractor.
+
+-Classes of interest-
+
+.Serial Version.
+
+/ incrementallda.IncrEstimator
+
+Takes care of creating the LDA model and performing the training (or sampling) in method estimate. Sampling the word assignments is done following [Blei 03] http://www.cs.princeton.edu/~blei/papers/BleiNgJordan2003.pdf.
+
+/ incrementallda.IncrModel
+
+Represents the incremental model. A model contains document data, topic word assignments, distribution of topics for each document and distribution of words for each topic. The incremental model manages the update of the current set of documents. It maintains its size to basis_size by removing batch_size items when batch_size new items are added. The new word topic assignments are then resampled in IncrEstimator.
+
+.Parallel Version.
+
+/ MPIODA
+
+Single class containing the whole code for creating a model and sampling in it. The root process takes care of reading the data, scattering it to the different processes. In order to sample, the LDA model needs to store two types of counts. One is defined by the number of times a particular word of the vocabulary is assigned to a particular topic. The other defined the number of words assigned to a particular topic contain each document. These ressources are stored as nw and np in both the serial and parallel version. Following the MPI sampling of the LDA model provided by [Wang] plda.googlecode.com/files/aaim.pdf, the processes share the ressources nw and maintain a local version of np. Because each process needs to work with the same version of nw, this ressource is AllReduced after each resampling. This is the bottleneck of the parallel performance of the model. It requires an important amount of communication between the processes.
+
+After each batch has been processes, the root process takes care of gathering the topic distribution for each documents and output the best matched documents for each new document. A threshold is applied to avoid outputting matched items with too big divergence.

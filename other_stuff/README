@@ -1,0 +1,31 @@
+Installation and execution:
+
+- Extract the source and class files from the jar:
+
+  $ jar xf ODA.jar
+
+- Running the serial version:
+
+  $ java -cp ODA.jar -Xmx1000M SerialODA ODA/corpus/lda en_2005_02.bag ensy_2005_02.bag
+  where ODA/corpus/lda is the working directory and en_2005_02.bag, 
+  ensy_2005_02.bag the input files.
+
+- Running the parallel version:
+
+  Install MPJ: http://sourceforge.net/projects/mpjexpress/
+  
+  Running in Multi-core configuration:
+  $ mpjrun.sh -np 8 -jar ODA.jar -Xmx1000M ODA/corpus/lda en_2005_02.bag ensy_2005_02.bag
+
+- Visualize the result
+
+  These two programs only writes on the standard outputs the identifiers of the matched
+  documents. To visualize the content of these matched documents, you need to run the
+  Reader class.
+
+  $ java -cp ODA.jar gui/Reader
+
+  This application reads a file during its creation containing the matched documents
+  identifiers. In order to find what our program has found for matched documents, first
+  run the parallel or serial version and redirect the standard output into a file. Use
+  the Reader to read this file.
