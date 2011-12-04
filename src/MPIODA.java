@@ -167,7 +167,7 @@ public class MPIODA {
 						MPI.COMM_WORLD.Reduce(nwsum_p, 0, nwsum, 0, K, MPI.INT, MPI.SUM,
 								numberOfProcessesPerBatch*next_process+i);
 					}
-				//} else {
+				//} else{
 				  } else if(iter%20==0) {
 					/**
 					 * Update nw and nwsum for all processes
