@@ -22,8 +22,8 @@ public class MPIODA {
 	static Document[][] data_p;
 	static int K = 10;
 	static int V, M;
-	static int basis_size = 8192; // Must be a power of 2.
-	static int batch_size = 4096; // Cannot exceed basis_size and must be a power of 2.
+	static int basis_size = 2048; // Must be a power of 2.
+	static int batch_size = 1024; // Cannot exceed basis_size and must be a power of 2.
 	static double alpha = 50.0 / K;
 	static double beta = 0.1;
 	static double[] p;
@@ -136,6 +136,8 @@ public class MPIODA {
 			 *  Sample
 			 */
 			for (int iter = 0; iter < (batch==0 ? niters*main_size : niters); iter++) {
+				if (global_rank == 0)
+					System.out.println("start of iteration");
 				/**
 				 * Clear the number of instances of a word assigned to a topic,
 				 * and also the number of words assigned to a topic.
@@ -161,28 +163,46 @@ public class MPIODA {
 						nw_p = new int[V*K];
 						nwsum_p = new int[K];
 					}
+					MPI.COMM_WORLD.Barrier();
+					if (global_rank == 0)
+						System.out.println("reduce line 168");
 					for(int i = 0; i < numberOfProcessesPerBatch; i++){
 						MPI.COMM_WORLD.Reduce(nw_p, 0, nw, 0, V*K, MPI.INT, MPI.SUM,
 								numberOfProcessesPerBatch*next_process+i);
 						MPI.COMM_WORLD.Reduce(nwsum_p, 0, nwsum, 0, K, MPI.INT, MPI.SUM,
 								numberOfProcessesPerBatch*next_process+i);
 					}
+					MPI.COMM_WORLD.Barrier();
+					if (global_rank == 0)
+						System.out.println("reduce line 177");
 				//} else {
 				  } else if(iter%20==0) {
 					/**
 					 * Update nw and nwsum for all processes
 					 */
+					MPI.COMM_WORLD.Barrier();
+					if (global_rank == 0)
+						System.out.println("allreduce");
 					MPI.COMM_WORLD.Allreduce(nw_p, 0, nw, 0, V*K, MPI.INT, MPI.SUM);
 					MPI.COMM_WORLD.Allreduce(nwsum_p, 0, nwsum, 0, K, MPI.INT, MPI.SUM);
+					MPI.COMM_WORLD.Barrier();
+					if (global_rank == 0)
+						System.out.println("allreduce finished");
 				}
+				if (global_rank == 0)
+					System.out.println("end of iteration");
 			}
 
         	/**
 			 * Compute best matches for the current batch by sending necessary info to root process
 			 */
+			if (global_rank == 0)
+				System.out.println("before gather");
 			double[] theta = computeTheta();
 			MPI.COMM_WORLD.Gather(theta, 0, K*batch_size/numberOfProcessesPerBatch, MPI.DOUBLE, theta_all, 0, K*batch_size/numberOfProcessesPerBatch, MPI.DOUBLE, root);
 			MPI.COMM_WORLD.Gather(indices, 0, batch_size/numberOfProcessesPerBatch, MPI.INT, indices_all, 0, batch_size/numberOfProcessesPerBatch, MPI.INT, root);
+			if (global_rank == 0)
+				System.out.println("after gather");
 			/**
 			 * Represent result for the batch by use of root process
 			 */
@@ -200,7 +220,11 @@ public class MPIODA {
 				COMM_LOCAL.Reduce(nw_temp, 0, nw, 0, V*K, MPI.INT, MPI.SUM, 0);
 				//System.out.println("Process " + global_rank + " finished reducing");
 			}
+			if (global_rank == 0)
+				System.out.println("before broadcast line 208");
 			MPI.COMM_WORLD.Bcast(nw, 0, V*K, MPI.INT, numberOfProcessesPerBatch*next_process);
+			if (global_rank == 0)
+				System.out.println("after broadcast line 211");
 			/**
 			 * Shift the processes
 			 */
