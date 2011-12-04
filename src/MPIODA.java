@@ -46,6 +46,7 @@ public class MPIODA {
 
 	public static void main(String[] args) throws FileNotFoundException {
 		args = MPI.Init(args);
+		;
 		int batchesPerBasis = basis_size/batch_size;
 		global_rank = MPI.COMM_WORLD.Rank();
 		global_size = MPI.COMM_WORLD.Size();
