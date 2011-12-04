@@ -82,7 +82,7 @@ public class MPIODA {
 			String fileFr = "ensy_2005_02.bag";
 			dataset = MixedDataset.readDataSet(dir + File.separator + fileEn, dir + File.separator + fileFr);
 			parameters[0] = dataset.V;
-			parameters[1] = dataset.M/10;
+			parameters[1] = dataset.M;
 			data = dataset.docs;
 			enIndex = Util.loadIndexFile(dir + File.separator + "en_2005_02.bag.id");
 			frIndex = Util.loadIndexFile(dir + File.separator + "ensy_2005_02.bag.id");
