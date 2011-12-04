@@ -187,8 +187,6 @@ public class MPIODA {
 					if (global_rank == 0)
 						System.out.println("allreduce finished");
 				}
-				if (global_rank == 0)
-					System.out.println("end of iteration");
 			}
 
         	/**
