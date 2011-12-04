@@ -136,8 +136,6 @@ public class MPIODA {
 			 *  Sample
 			 */
 			for (int iter = 0; iter < (batch==0 ? niters*main_size : niters); iter++) {
-				if (global_rank == 0)
-					System.out.println("start of iteration");
 				/**
 				 * Clear the number of instances of a word assigned to a topic,
 				 * and also the number of words assigned to a topic.
