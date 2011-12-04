@@ -95,7 +95,7 @@ public class MPIODA {
 		MPI.COMM_WORLD.Bcast(parameters, 0, parameters.length, MPI.INT, root);
 		V = parameters[0];
 		M = parameters[1];
-        int num_batch = (M - (basis_size - batch_size)) / batch_size - global_size;
+        int num_batch = (M - (basis_size - batch_size)) / batch_size - 2;
 		int phase_size = (M / basis_size);
         nd_p = new int[phase_size][batch_size/numberOfProcessesPerBatch][K];
 		ndsum_p = new int[phase_size][batch_size/numberOfProcessesPerBatch];
