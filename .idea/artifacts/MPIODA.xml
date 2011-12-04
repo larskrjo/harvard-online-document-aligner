@@ -2,14 +2,17 @@
   <artifact type="jar" name="MPIODA">
     <output-path>$PROJECT_DIR$/out/artifacts/MPIODA</output-path>
     <root id="archive" name="MPIODA.jar">
-      <element id="dir-copy" path="$PROJECT_DIR$/src" />
       <element id="directory" name="corpus">
         <element id="dir-copy" path="$PROJECT_DIR$/corpus" />
-        <element id="directory" name="lib">
-          <element id="library" level="project" name="Unnamed" />
-        </element>
       </element>
       <element id="module-output" name="Online-Document-Aligner" />
+      <element id="directory" name="lib">
+        <element id="library" level="project" name="Unnamed" />
+      </element>
+      <element id="directory" name="src">
+        <element id="dir-copy" path="$PROJECT_DIR$/src" />
+      </element>
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/jdom-1.1.2.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>
