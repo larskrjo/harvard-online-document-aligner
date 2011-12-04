@@ -22,8 +22,8 @@ public class MPIODA {
 	static Document[][] data_p;
 	static int K = 10;
 	static int V, M;
-	static int basis_size = 2048; // Must be a power of 2.
-	static int batch_size = 1024; // Cannot exceed basis_size and must be a power of 2.
+	static int basis_size = 512; // Must be a power of 2.
+	static int batch_size = 256; // Cannot exceed basis_size and must be a power of 2.
 	static double alpha = 50.0 / K;
 	static double beta = 0.1;
 	static double[] p;
@@ -49,6 +49,8 @@ public class MPIODA {
 		int batchesPerBasis = basis_size/batch_size;
 		global_rank = MPI.COMM_WORLD.Rank();
 		global_size = MPI.COMM_WORLD.Size();
+		basis_size *= global_size;
+		batch_size *= global_size;
 		numberOfProcessesPerBatch = global_size/batchesPerBasis;
 		COMM_MAIN =  MPI.COMM_WORLD.Split(global_rank % numberOfProcessesPerBatch, global_rank);
 		main_rank = COMM_MAIN.Rank();
@@ -80,7 +82,7 @@ public class MPIODA {
 			String fileFr = "ensy_2005_02.bag";
 			dataset = MixedDataset.readDataSet(dir + File.separator + fileEn, dir + File.separator + fileFr);
 			parameters[0] = dataset.V;
-			parameters[1] = dataset.M;
+			parameters[1] = dataset.M/10;
 			data = dataset.docs;
 			enIndex = Util.loadIndexFile(dir + File.separator + "en_2005_02.bag.id");
 			frIndex = Util.loadIndexFile(dir + File.separator + "ensy_2005_02.bag.id");
