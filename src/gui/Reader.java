@@ -92,14 +92,18 @@ public class Reader implements ListSelectionListener{
         		try {
         			BufferedReader br = new BufferedReader(match_reader);
         			int count = 0;
-        			while (count++ < maxLines) {
+        			while (true) {
         				//System.out.println(in.hasNextLine());
         				String l;
         				if ((l = br.readLine()) != null) {
-        					if (! l.startsWith("AFP"))
+        					if (! l.startsWith("AFP")) {
+        						count++;
         						continue;
+        					}
+        					
         					listModel.addElement(l);
-        					//System.out.println(l);
+        					if (count >= maxLines)
+        						break;
         				}
         			}
         		} catch (Exception e) {
