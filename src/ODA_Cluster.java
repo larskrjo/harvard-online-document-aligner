@@ -48,10 +48,6 @@ public class ODA_Cluster {
 		args = MPI.Init(args);
 		int batchesPerBasis = basis_size/batch_size;
 		global_rank = MPI.COMM_WORLD.Rank();
-		if (global_rank == 0 && args.length < 3) {
-			System.err.println("Usage: java ODA_Cluster dir en.bag ensy.bag");
-			System.exit(-1);
-		}
 		global_size = MPI.COMM_WORLD.Size();
 		basis_size *= global_size;
 		batch_size *= global_size;
