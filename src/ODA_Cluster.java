@@ -58,9 +58,6 @@ public class ODA_Cluster {
 		COMM_LOCAL =  MPI.COMM_WORLD.Split(main_rank % batchesPerBasis, global_rank);
 		local_rank = COMM_LOCAL.Rank();
 		local_size = COMM_LOCAL.Size();
-		System.out.println("Global rank: " + global_rank + " Local within a batch rank: " + COMM_LOCAL.Rank() + " " +
-				"Batch rank: " +
-				COMM_MAIN.Rank());
 
 		int last_process = main_size-1; // process taking care of the last new batch of data
 		int next_process = 0; // process that are going to taking care of the new batch of data
@@ -129,8 +126,6 @@ public class ODA_Cluster {
 		long time = System.currentTimeMillis();
 		for (int batch = 0; batch < num_batch; batch++) {
 			if (global_rank == root){
-				System.out.println("Processing on basis documents, with " + batch + " batches added and removed.");
-				System.out.println("Time it took: " + (System.currentTimeMillis() - time));
 				time = System.currentTimeMillis();
 			}
 
@@ -164,8 +159,6 @@ public class ODA_Cluster {
 						nwsum_p = new int[K];
 					}
 					MPI.COMM_WORLD.Barrier();
-					if (global_rank == 0)
-						System.out.println("reduce line 168");
 					for(int i = 0; i < numberOfProcessesPerBatch; i++){
 						MPI.COMM_WORLD.Reduce(nw_p, 0, nw, 0, V*K, MPI.INT, MPI.SUM,
 								numberOfProcessesPerBatch*next_process+i);
@@ -173,34 +166,21 @@ public class ODA_Cluster {
 								numberOfProcessesPerBatch*next_process+i);
 					}
 					MPI.COMM_WORLD.Barrier();
-					if (global_rank == 0)
-						System.out.println("reduce line 177");
-				//} else {
 				  } else if(iter%20==0) {
 					/**
 					 * Update nw and nwsum for all processes
 					 */
-					MPI.COMM_WORLD.Barrier();
-					if (global_rank == 0)
-						System.out.println("allreduce");
 					MPI.COMM_WORLD.Allreduce(nw_p, 0, nw, 0, V*K, MPI.INT, MPI.SUM);
 					MPI.COMM_WORLD.Allreduce(nwsum_p, 0, nwsum, 0, K, MPI.INT, MPI.SUM);
-					MPI.COMM_WORLD.Barrier();
-					if (global_rank == 0)
-						System.out.println("allreduce finished");
 				}
 			}
 
         	/**
 			 * Compute best matches for the current batch by sending necessary info to root process
 			 */
-			if (global_rank == 0)
-				System.out.println("before gather");
 			double[] theta = computeTheta();
 			MPI.COMM_WORLD.Gather(theta, 0, K*batch_size/numberOfProcessesPerBatch, MPI.DOUBLE, theta_all, 0, K*batch_size/numberOfProcessesPerBatch, MPI.DOUBLE, root);
 			MPI.COMM_WORLD.Gather(indices, 0, batch_size/numberOfProcessesPerBatch, MPI.INT, indices_all, 0, batch_size/numberOfProcessesPerBatch, MPI.INT, root);
-			if (global_rank == 0)
-				System.out.println("after gather");
 			/**
 			 * Represent result for the batch by use of root process
 			 */
@@ -218,11 +198,7 @@ public class ODA_Cluster {
 				COMM_LOCAL.Reduce(nw_temp, 0, nw, 0, V*K, MPI.INT, MPI.SUM, 0);
 				//System.out.println("Process " + global_rank + " finished reducing");
 			}
-			if (global_rank == 0)
-				System.out.println("before broadcast line 208");
 			MPI.COMM_WORLD.Bcast(nw, 0, V*K, MPI.INT, numberOfProcessesPerBatch*next_process);
-			if (global_rank == 0)
-				System.out.println("after broadcast line 211");
 			/**
 			 * Shift the processes
 			 */
@@ -391,15 +367,6 @@ public class ODA_Cluster {
 					System.out.println(enIndex[dataset.getRelativeIndex(indices_all[best])] + "-" + frIndex[dataset
 						.getRelativeIndex(indices_all[q])]);
 				}
-				/*
-				System.out.println("======================================");
-				System.out.println("Score for (" + indices_all[q] + ", " + indices_all[best] + ") = " + min_div);
-				System.out.println("--------------------------------------");
-				System.out.println(dataset.getRawDoc(indices_all[q]));
-				System.out.println("--------------------------------------");
-				System.out.println(dataset.getRawDoc(indices_all[best]));
-				System.out.println("======================================");
-                */
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="MPIODA">
-    <output-path>$PROJECT_DIR$/out/artifacts/MPIODA</output-path>
-    <root id="archive" name="MPIODA.jar">
+  <artifact type="jar" name="ODA">
+    <output-path>$PROJECT_DIR$/out/artifacts/ODA</output-path>
+    <root id="archive" name="ODA.jar">
       <element id="directory" name="corpus">
         <element id="dir-copy" path="$PROJECT_DIR$/corpus" />
       </element>
