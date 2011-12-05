@@ -18,6 +18,8 @@ Installation and execution:
   Install MPJ: http://sourceforge.net/projects/mpjexpress/
   
   Running in Multi-core configuration:
+  $ export MPJ_HOME=/path/to/mpj/
+  $ export PATH=$PATH:$MPJ_HOME/bin
   $ mpjrun.sh -np 2 -cp ODA.jar -Xmx1000M ODA_Multicore corpus/lda en_2005_02.bag ensy_2005_02.bag
 
   You will note when playing with the number of processes (that must be a power of 2) that the time
