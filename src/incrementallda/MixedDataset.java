@@ -106,10 +106,14 @@ public class MixedDataset extends LDADataset{
 					temp[k++] = data.docs[M1+(j++)];
 				}
 			}
-			while (i < M1)
+			while (i < M1) {
+				data.type[k] = Doctype.EN;
 				temp[k++] = data.docs[i++];
-			while (j < M2)
+			}
+			while (j < M2) {
+				data.type[k] = Doctype.ENSY;
 				temp[k++] = data.docs[M1+j++];
+			}
 			for (int d = 0; d < M1+M2; d++)
 				temp[d].index = d;
 			data.docs = temp;

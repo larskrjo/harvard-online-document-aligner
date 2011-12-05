@@ -12,7 +12,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +31,6 @@ import javax.swing.event.ListSelectionListener;
 
 import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
 public class Reader implements ListSelectionListener{
@@ -54,10 +52,11 @@ public class Reader implements ListSelectionListener{
 	HashMap<String, String> en;
 	HashMap<String, String> fr;
 	
+	
 
-    public Reader() throws JDOMException, IOException{
-    	en = loadXML("corpus/preprocess/format/afp_eng_200502");
-    	fr = loadXML("corpus/preprocess/format/afp_fre_200502");
+    public Reader(String dir, String file1, String file2) throws Exception{
+    	en = loadXML(dir + File.separator + file1);
+    	fr = loadXML(dir + File.separator + file2);
     	
 		// Set menubar
         f.setJMenuBar(mb);
@@ -152,7 +151,7 @@ public class Reader implements ListSelectionListener{
         mnuItemQuit.addActionListener(new ListenMenuQuit());
     }
 	
-    private HashMap<String, String> loadXML(String f) throws JDOMException, IOException {
+    private HashMap<String, String> loadXML(String f) throws Exception {
 		HashMap<String, String> ret = new HashMap<String, String>();
 		SAXBuilder builder = new SAXBuilder();
 		FileInputStream fis = new FileInputStream(f);
@@ -206,8 +205,11 @@ public class Reader implements ListSelectionListener{
         f.setVisible(true);
     }
     
-    public static void main(String args[]) throws JDOMException, IOException{
-        Reader gui = new Reader();
+    public static void main(String args[]) throws Exception{
+    	String dir = "corpus/preprocess/format";
+    	String file1 = "afp_eng_200502";
+    	String file2 = "afp_fre_200502";
+        Reader gui = new Reader(dir, file1, file2);
         gui.launchFrame();
     }
 

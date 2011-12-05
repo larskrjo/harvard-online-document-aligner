@@ -1,14 +1,15 @@
+import incrementallda.IncrEstimator;
+
 import java.io.FileNotFoundException;
 
-import incrementallda.IncrEstimator;
 import jgibblda.LDACmdOption;
 
 
 public class SerialODA {
 
 	public static void main(String[] args) throws FileNotFoundException {
-		if (args.length < 2) {
-			System.err.println("Usage: java OnlineDocumentAligner dir en.bag ensy.bag");
+		if (args.length < 3) {
+			System.err.println("Usage: java SerialODA dir en.bag ensy.bag");
 			System.exit(-1);
 		}
 		LDACmdOption option = new LDACmdOption();

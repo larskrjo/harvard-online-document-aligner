@@ -46,6 +46,7 @@ public class ODA_Multicore{
 
 	public static void main(String[] args) throws FileNotFoundException {
 		args = MPI.Init(args);
+		
 		int batchesPerBasis = basis_size/batch_size;
 		global_rank = MPI.COMM_WORLD.Rank();
 		global_size = MPI.COMM_WORLD.Size();
@@ -77,9 +78,9 @@ public class ODA_Multicore{
 		 * Initialize data for root process
 		 */
 		if (global_rank == root) {
-			String dir = "corpus/lda";
-			String fileEn = "en_2005_02.bag";
-			String fileFr = "ensy_2005_02.bag";
+			String dir = args[0];
+			String fileEn = args[1];
+			String fileFr = args[2];
 			dataset = MixedDataset.readDataSet(dir + File.separator + fileEn, dir + File.separator + fileFr);
 			parameters[0] = dataset.V;
 			parameters[1] = dataset.M;

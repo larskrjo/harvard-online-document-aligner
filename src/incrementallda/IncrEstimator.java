@@ -3,7 +3,6 @@ package incrementallda;
 import java.io.File;
 import java.io.FileNotFoundException;
 
-import jgibblda.Conversion;
 import jgibblda.Estimator;
 import jgibblda.LDACmdOption;
 import util.KullBackLeibler;
@@ -20,7 +19,7 @@ public class IncrEstimator extends Estimator {
 		if (option.est){
 			if (!trnModel.initNewModel(option))
 				return false;
-			trnModel.data.localDict.writeWordMap(option.dir + File.separator + option.wordMapFileName);
+			//trnModel.data.localDict.writeWordMap(option.dir + File.separator + option.wordMapFileName);
 		}
 		else if (option.estc){
 			if (!trnModel.initEstimatedModel(option))
@@ -81,7 +80,7 @@ public class IncrEstimator extends Estimator {
 					if (trnModel.data.type[m] == Doctype.EN) {
 						System.out.println(enIndex[trnModel.data.getRelativeIndex(m)] + "-" + frIndex[trnModel.data.getRelativeIndex(best)]);
 					} else {
-						System.out.println(enIndex[trnModel.data.getRelativeIndex(m)] + "-" + frIndex[trnModel.data.getRelativeIndex(best)]);
+						System.out.println(enIndex[trnModel.data.getRelativeIndex(best)] + "-" + frIndex[trnModel.data.getRelativeIndex(m)]);
 					}
 					/*
 					System.out.println("======================================");
@@ -97,13 +96,13 @@ public class IncrEstimator extends Estimator {
 
 			computePhi();
 			//System.out.println("Saving the model at iteration " + trnModel.liter + " ...");
-			trnModel.saveModel("model-" + Conversion.ZeroPad(i, 5));
+			//trnModel.saveModel("model-" + Conversion.ZeroPad(i, 5));
 
 			i++;
 		}// end iterations		
 		computeTheta();
 		computePhi();
-		trnModel.saveModel("model-final");
+		//trnModel.saveModel("model-final");
 	}
 	
 	public void computeTheta(){
